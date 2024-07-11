@@ -1,20 +1,20 @@
-FROM ubuntu:jammy as base
+FROM ubuntu:oracular AS base
 RUN apt-get update
 
-ENV TIKA_VERSION 1.28.4
-ENV TIKA_SERVER_JAR tika-server
+ENV TIKA_VERSION=2.9.2
+ENV TIKA_SERVER_JAR=tika-server-standard
 
-MAINTAINER david@logicalspark.com
+LABEL authors=david@logicalspark.com
 
-FROM base as dependencies
+FROM base AS dependencies
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install openjdk-17-jre-headless gdal-bin tesseract-ocr \
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install openjdk-22-jre-headless gdal-bin tesseract-ocr \
         tesseract-ocr-eng tesseract-ocr-ita tesseract-ocr-fra tesseract-ocr-spa tesseract-ocr-deu curl
 
 RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y xfonts-utils fonts-freefont-ttf fonts-liberation ttf-mscorefonts-installer wget cabextract
 
-FROM dependencies as fetch_tika
+FROM dependencies AS fetch_tika
 
 ENV NEAREST_TIKA_SERVER_URL="https://www.apache.org/dyn/closer.cgi/tika/${TIKA_SERVER_JAR}-${TIKA_VERSION}.jar?filename=tika/${TIKA_VERSION}/${TIKA_SERVER_JAR}-${TIKA_VERSION}.jar&action=download" \
    NEAREST_TIKA_SERVER_URL_OLD="https://www.apache.org/dyn/closer.cgi/tika/${TIKA_SERVER_JAR}-${TIKA_VERSION}.jar?filename=tika/${TIKA_SERVER_JAR}-${TIKA_VERSION}.jar&action=download" \
@@ -36,14 +36,17 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y install gnupg2 wget \
     && sh -c "[ -f /${TIKA_SERVER_JAR}-${TIKA_VERSION}.jar.asc ]" || exit 1;
 
 
-FROM dependencies as runtime
+FROM dependencies AS runtime
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-ENV TIKA_VERSION=$TIKA_VERSION
-COPY --from=fetch_tika /${TIKA_SERVER_JAR}-${TIKA_VERSION}.jar /tika-server-${TIKA_VERSION}.jar
 
-# "random" uid/gid hopefully not used anywhere else
-ARG UID_GID="35002:35002"
-USER $UID_GID
+ENV TIKA_VERSION=$TIKA_VERSION
+
+RUN groupadd -g 999 tika && \
+    useradd -r -u 999 -g tika tika
+USER tika
+
+COPY --chown=tika:tika --from=fetch_tika /${TIKA_SERVER_JAR}-${TIKA_VERSION}.jar /tika-server-${TIKA_VERSION}.jar
+
 EXPOSE 9998
-ENTRYPOINT [ "/bin/sh", "-c", "exec java -jar /${TIKA_SERVER_JAR}-${TIKA_VERSION}.jar -h 0.0.0.0 $0 $@"]
+ENTRYPOINT [ "/bin/sh", "-c", "exec java -Xms256m -Xmx1g -jar /tika-server-${TIKA_VERSION}.jar -h 0.0.0.0 $0 $@"]
