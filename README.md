@@ -38,13 +38,13 @@ docker run -d -p 9998:9998 logicalspark/docker-tikaserver
 To build the image from scratch, simply invoke:
 
 ```shell
-docker build -t 'docker-tikaserver' github.com/LogicalSpark/docker-tikaserver
+docker build -t logicalspark/docker-tikaserver:2.9.2 --no-cache --build-arg TIKA_VERSION=2.9.2 --build-arg TIKA_SERVER_JAR=tika-server-standard .
  ```
 
 You can then use the following command (using the name you allocated in the build command as part of -t option):
 
 ```shell
-docker run -d -p 9998:9998 docker-tikaserver
+docker run -d -p 9998:9998 logicalspark/docker-tikaserver
 ```
 
 ## More
