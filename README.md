@@ -1,7 +1,9 @@
 # docker-tikaserver [![Build Status](https://travis-ci.org/LogicalSpark/docker-tikaserver.svg?branch=master)](https://travis-ci.org/LogicalSpark/docker-tikaserver)
-This repo contains the Dockerfile to create a docker image that contains the latest Ubuntu LTS running the Apache Tika 1.28.4 Server on Port 9998 using Java 17.
+
+This repo contains the Dockerfile to create a docker image that contains the latest Ubuntu running the Apache Tika 2.9.2 Server on Port 9998 using Java 22.
 
 Out-of-the-box the container also includes dependencies for the GDAL and Tesseract OCR parsers.  To balance showing functionality versus the size of the image, this file currently installs the language packs for the following languages:
+
 * English
 * French
 * German
@@ -9,45 +11,60 @@ Out-of-the-box the container also includes dependencies for the GDAL and Tessera
 * Spanish.
 
 To install more languages simply update the apt-get command to include the package containing the language you required, or include your own custom packs using an ADD command.
+## Fork
+
+* Docker image to run the container as non root user (UID/GID 999)
+* Adding more RAM to the java exec command.
+* update ubuntu to: oracular
+* update Java to: 22
+* update Apache Tika to: 2.9.2
 
 ## Usage
 
-First you need to pull down the build from Dockerhub, which can be done by invoking:
+First you need to pull down the build from DockerHub, which can be done by invoking:
 
-    docker pull logicalspark/docker-tikaserver
+```shell
+docker pull logicalspark/docker-tikaserver
+```
 
 Then to run the container, execute the following command:
 
-    docker run -d -p 9998:9998 logicalspark/docker-tikaserver
+```shell
+docker run -d -p 9998:9998 logicalspark/docker-tikaserver
+```
 
 ## Building
 
 To build the image from scratch, simply invoke:
 
-    docker build -t 'docker-tikaserver' github.com/LogicalSpark/docker-tikaserver
-   
+```shell
+docker build -t logicalspark/docker-tikaserver:2.9.2 --no-cache --build-arg TIKA_VERSION=2.9.2 --build-arg TIKA_SERVER_JAR=tika-server-standard .
+ ```
+
 You can then use the following command (using the name you allocated in the build command as part of -t option):
 
-    docker run -d -p 9998:9998 docker-tikaserver
-    
+```shell
+docker run -d -p 9998:9998 logicalspark/docker-tikaserver
+```
+
 ## More
 
 For more info on Apache Tika Server, go to the [Apache Tika Server documentation](http://wiki.apache.org/tika/TikaJAXRS).
 
 ## Author
 
-  * David Meikle (<david@logicalspark.com>)
-   
+* David Meikle (<david@logicalspark.com>)
+
 ## Contributors
 
 There have been a range of [contributors](https://github.com/LogicalSpark/docker-tikaserver/graphs/contributors) on GitHub and via suggestions, including:
 
-- [@grossws](https://github.com/grossws)
-- [@arjunyel](https://github.com/arjunyel)
-- [@mpdude](https://github.com/mpdude)
-- [@laszlocsontosuw](https://github.com/laszlocsontosuw)
+* [@grossws](https://github.com/grossws)
+* [@arjunyel](https://github.com/arjunyel)
+* [@mpdude](https://github.com/mpdude)
+* [@laszlocsontosuw](https://github.com/laszlocsontosuw)
 
-## Licence
+## License
 
    Copyright 2015-2021 David Meikle
 
@@ -55,7 +72,7 @@ There have been a range of [contributors](https://github.com/LogicalSpark/docker
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+   http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
